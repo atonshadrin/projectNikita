@@ -20,7 +20,10 @@ function parseTerm(tokens, pos) {
     const op = tokens[p++];
     const [right, next] = parseUnary(tokens, p);
     if (op === '*') left = left * right;
-    else if (op === '/') left = left / right;
+    else if (op === '/') {
+      if (right === 0) throw new Error('Division by zero');
+      left = left / right;
+    }
     else left = left % right;
     p = next;
   }
