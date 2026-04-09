@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Админ — NewsPortal{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-logo">
+            <i class="fas fa-bolt"></i>
+            <span>News<strong>Admin</strong></span>
+        </div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin_panel.dashboard') }}" class="{% if request.endpoint == 'admin_panel.dashboard' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt"></i> Дашборд
+            </a>
+            <a href="{{ url_for('admin_panel.news_list') }}" class="{% if 'news' in request.endpoint %}active{% endif %}">
+                <i class="fas fa-newspaper"></i> Новости
+            </a>
+            <a href="{{ url_for('admin_panel.categories_list') }}" class="{% if 'categ' in request.endpoint %}active{% endif %}">
+                <i class="fas fa-tags"></i> Категории
+            </a>
+            <a href="{{ url_for('admin_panel.comments_list') }}" class="{% if 'comment' in request.endpoint %}active{% endif %}">
+                <i class="fas fa-comments"></i> Комментарии
+            </a>
+            <a href="{{ url_for('admin_panel.users_list') }}" class="{% if 'user' in request.endpoint %}active{% endif %}">
+                <i class="fas fa-users"></i> Пользователи
+            </a>
+            <div class="admin-nav-divider"></div>
+            <a href="{{ url_for('main.index') }}">
+                <i class="fas fa-globe"></i> На сайт
+            </a>
+            <a href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main -->
+    <div class="admin-main">
+        <header class="admin-header">
+            <button class="admin-toggle" id="adminToggle"><i class="fas fa-bars"></i></button>
+            <div class="admin-header-title">{% block page_title %}Панель управления{% endblock %}</div>
+            <div class="admin-header-user">
+                <i class="fas fa-user-shield"></i> {{ current_user.username }}
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="admin-alerts">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <i class="fas fa-{% if category == 'success' %}check{% elif category == 'danger' %}times{% else %}info{% endif %}-circle"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="admin-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('adminToggle').addEventListener('click', function() {
+    document.getElementById('adminSidebar').classList.toggle('collapsed');
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

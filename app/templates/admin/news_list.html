@@ -1,0 +1,68 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Новости — Админ{% endblock %}
+{% block page_title %}Управление новостями{% endblock %}
+{% block content %}
+<div class="admin-section-header">
+    <h2>Все новости ({{ news.total }})</h2>
+    <a href="{{ url_for('admin_panel.news_create') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus"></i> Добавить новость
+    </a>
+</div>
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Изображение</th>
+                <th>Заголовок</th>
+                <th>Категория</th>
+                <th>Дата</th>
+                <th>Просмотры</th>
+                <th>Лайки</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in news.items %}
+            <tr>
+                <td>{{ article.id }}</td>
+                <td>
+                    {% if article.image %}
+                    <img src="{{ url_for('static', filename='img/uploads/' + article.image) }}" class="thumb">
+                    {% else %}
+                    <div class="thumb-placeholder"><i class="fas fa-image"></i></div>
+                    {% endif %}
+                </td>
+                <td><a href="{{ url_for('news.detail', slug=article.slug) }}" target="_blank">{{ article.title[:55] }}{% if article.title|length > 55 %}...{% endif %}</a></td>
+                <td><span class="badge-sm" style="background: {{ article.category.color }}">{{ article.category.name }}</span></td>
+                <td>{{ article.published_at.strftime('%d.%m.%Y') }}</td>
+                <td>{{ article.views_count }}</td>
+                <td>{{ article.likes_count }}</td>
+                <td>
+                    {% if article.is_published %}<span class="status-badge status-active">Опубл.</span>
+                    {% else %}<span class="status-badge status-draft">Черновик</span>{% endif %}
+                    {% if article.is_featured %}<span class="status-badge status-featured">Главная</span>{% endif %}
+                </td>
+                <td class="actions-cell">
+                    <a href="{{ url_for('admin_panel.news_edit', news_id=article.id) }}" class="action-btn action-edit"><i class="fas fa-edit"></i></a>
+                    <form method="post" action="{{ url_for('admin_panel.news_delete', news_id=article.id) }}" style="display:inline" onsubmit="return confirm('Удалить?')">
+                        <button type="submit" class="action-btn action-delete"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if news.pages > 1 %}
+<div class="pagination">
+    {% if news.has_prev %}<a href="{{ url_for('admin_panel.news_list', page=news.prev_num) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>{% endif %}
+    {% for p in news.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}<a href="{{ url_for('admin_panel.news_list', page=p) }}" class="page-btn {% if p == news.page %}active{% endif %}">{{ p }}</a>
+        {% else %}<span class="page-dots">…</span>{% endif %}
+    {% endfor %}
+    {% if news.has_next %}<a href="{{ url_for('admin_panel.news_list', page=news.next_num) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

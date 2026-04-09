@@ -1,0 +1,36 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Комментарии — Админ{% endblock %}
+{% block page_title %}Комментарии{% endblock %}
+{% block content %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead><tr><th>#</th><th>Автор</th><th>Комментарий</th><th>Новость</th><th>Дата</th><th>Действия</th></tr></thead>
+        <tbody>
+            {% for comment in comments.items %}
+            <tr>
+                <td>{{ comment.id }}</td>
+                <td>{{ comment.author.username }}</td>
+                <td>{{ comment.content[:100] }}{% if comment.content|length > 100 %}...{% endif %}</td>
+                <td><a href="{{ url_for('news.detail', slug=comment.news.slug) }}" target="_blank">{{ comment.news.title[:40] }}...</a></td>
+                <td>{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td class="actions-cell">
+                    <form method="post" action="{{ url_for('admin_panel.comment_delete', comment_id=comment.id) }}" style="display:inline" onsubmit="return confirm('Удалить?')">
+                        <button type="submit" class="action-btn action-delete"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if comments.pages > 1 %}
+<div class="pagination">
+    {% if comments.has_prev %}<a href="{{ url_for('admin_panel.comments_list', page=comments.prev_num) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>{% endif %}
+    {% for p in comments.iter_pages() %}
+        {% if p %}<a href="{{ url_for('admin_panel.comments_list', page=p) }}" class="page-btn {% if p == comments.page %}active{% endif %}">{{ p }}</a>
+        {% else %}<span class="page-dots">…</span>{% endif %}
+    {% endfor %}
+    {% if comments.has_next %}<a href="{{ url_for('admin_panel.comments_list', page=comments.next_num) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

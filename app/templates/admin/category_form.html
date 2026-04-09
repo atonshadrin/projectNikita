@@ -1,0 +1,29 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}{% if category %}Редактировать{% else %}Создать{% endif %} категорию{% endblock %}
+{% block page_title %}{% if category %}Редактировать категорию{% else %}Создать категорию{% endif %}{% endblock %}
+{% block content %}
+<div class="admin-form-wrap admin-form-narrow">
+    <form method="post" class="admin-form">
+        <div class="form-group">
+            <label>Название *</label>
+            <input type="text" name="name" required value="{{ category.name if category else '' }}" placeholder="Политика">
+        </div>
+        <div class="form-group">
+            <label>Цвет</label>
+            <div class="color-input-row">
+                <input type="color" name="color" value="{{ category.color if category else '#3b82f6' }}">
+                <span>Выберите цвет категории</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Иконка (Font Awesome класс)</label>
+            <input type="text" name="icon" value="{{ category.icon if category else 'fas fa-tag' }}" placeholder="fas fa-globe">
+            <small>Например: fas fa-globe, fas fa-heart, fas fa-bolt</small>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Сохранить</button>
+            <a href="{{ url_for('admin_panel.categories_list') }}" class="btn btn-outline">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

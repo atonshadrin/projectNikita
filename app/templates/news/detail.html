@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}{{ article.title }} — NewsPortal{% endblock %}
+{% block content %}
+<div class="container article-layout">
+    <div class="article-main">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="{{ url_for('main.index') }}">Главная</a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="{{ url_for('main.category', slug=article.category.slug) }}" style="color: {{ article.category.color }}">
+                {{ article.category.name }}
+            </a>
+            <i class="fas fa-chevron-right"></i>
+            <span>{{ article.title[:60] }}{% if article.title|length > 60 %}...{% endif %}</span>
+        </nav>
+
+        <!-- Article Header -->
+        <article class="article-full">
+            <div class="article-badge-row">
+                <span class="badge" style="background: {{ article.category.color }}">
+                    <i class="{{ article.category.icon }}"></i> {{ article.category.name }}
+                </span>
+                {% if article.is_featured %}
+                <span class="badge badge-featured"><i class="fas fa-star"></i> Главная</span>
+                {% endif %}
+            </div>
+            <h1 class="article-title">{{ article.title }}</h1>
+            <div class="article-meta">
+                <span><i class="fas fa-user"></i> {{ article.author.username }}</span>
+                <span><i class="far fa-calendar"></i> {{ article.published_at.strftime('%d %B %Y, %H:%M') }}</span>
+                <span><i class="fas fa-eye"></i> {{ article.views_count }} просмотров</span>
+                <span><i class="far fa-comment"></i> {{ article.comments_count }} комментариев</span>
+            </div>
+
+            {% if article.image %}
+            <div class="article-image-wrap">
+                <img src="{{ url_for('static', filename='img/uploads/' + article.image) }}" alt="{{ article.title }}">
+            </div>
+            {% endif %}
+
+            {% if article.summary %}
+            <div class="article-lead">{{ article.summary }}</div>
+            {% endif %}
+
+            <div class="article-content">
+                {{ article.content | safe }}
+            </div>
+
+            <!-- Like Button -->
+            <div class="article-actions">
+                <button class="like-btn {% if user_liked %}liked{% endif %}" 
+                        id="likeBtn" 
+                        data-news-id="{{ article.id }}"
+                        {% if not current_user.is_authenticated %}disabled title="Войдите, чтобы поставить лайк"{% endif %}>
+                    <i class="fas fa-heart"></i>
+                    <span id="likeCount">{{ article.likes_count }}</span>
+                    Нравится
+                </button>
+                <div class="share-btns">
+                    <span>Поделиться:</span>
+                    <a href="https://t.me/share/url?url={{ request.url | urlencode }}" target="_blank" class="share-btn share-tg"><i class="fab fa-telegram"></i></a>
+                    <a href="https://vk.com/share.php?url={{ request.url | urlencode }}" target="_blank" class="share-btn share-vk"><i class="fab fa-vk"></i></a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Comments Section -->
+        <section class="comments-section" id="comments">
+            <h2><i class="fas fa-comments"></i> Комментарии ({{ article.comments_count }})</h2>
+
+            {% if current_user.is_authenticated %}
+            <form action="{{ url_for('news.add_comment', slug=article.slug) }}" method="post" class="comment-form">
+                <div class="form-group">
+                    <label><i class="fas fa-pencil-alt"></i> Оставить комментарий</label>
+                    <textarea name="content" rows="4" required placeholder="Ваш комментарий..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Отправить</button>
+            </form>
+            {% else %}
+            <div class="login-prompt">
+                <i class="fas fa-lock"></i>
+                <p><a href="{{ url_for('auth.login') }}">Войдите</a>, чтобы оставить комментарий.</p>
+            </div>
+            {% endif %}
+
+            <div class="comments-list">
+                {% for comment in comments %}
+                <div class="comment-item">
+                    <div class="comment-avatar"><i class="fas fa-user-circle"></i></div>
+                    <div class="comment-body">
+                        <div class="comment-header">
+                            <strong>{{ comment.author.username }}</strong>
+                            <span class="comment-date">{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        </div>
+                        <p>{{ comment.content }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-comments"><i class="far fa-comment-dots"></i> Комментариев пока нет. Будьте первым!</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-widget">
+            <div class="widget-header">
+                <h3><i class="fas fa-layer-group"></i> Похожие новости</h3>
+            </div>
+            {% for rel in related %}
+            <div class="related-item">
+                {% if rel.image %}
+                <img src="{{ url_for('static', filename='img/uploads/' + rel.image) }}" alt="{{ rel.title }}">
+                {% endif %}
+                <div>
+                    <a href="{{ url_for('news.detail', slug=rel.slug) }}">{{ rel.title }}</a>
+                    <span class="related-date">{{ rel.published_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="sidebar-widget">
+            <div class="widget-header">
+                <h3><i class="fas fa-tags"></i> Категории</h3>
+            </div>
+            <ul class="category-list">
+                {% for cat in categories %}
+                <li>
+                    <a href="{{ url_for('main.category', slug=cat.slug) }}">
+                        <span class="cat-icon" style="background: {{ cat.color }}"><i class="{{ cat.icon }}"></i></span>
+                        {{ cat.name }}
+                        <span class="cat-count">{{ cat.news.filter_by(is_published=True).count() }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const likeBtn = document.getElementById('likeBtn');
+if (likeBtn && !likeBtn.disabled) {
+    likeBtn.addEventListener('click', function() {
+        const newsId = this.dataset.newsId;
+        fetch(`/news/${newsId}/like`, {method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('likeCount').textContent = data.count;
+                likeBtn.classList.toggle('liked', data.liked);
+            });
+    });
+}
+</script>
+{% endblock %}

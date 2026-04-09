@@ -1,0 +1,64 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}{% if article %}Редактировать{% else %}Создать{% endif %} новость — Админ{% endblock %}
+{% block page_title %}{% if article %}Редактировать новость{% else %}Создать новость{% endif %}{% endblock %}
+{% block content %}
+<div class="admin-form-wrap">
+    <form method="post" enctype="multipart/form-data" class="admin-form">
+        <div class="form-grid">
+            <div class="form-col-main">
+                <div class="form-group">
+                    <label>Заголовок *</label>
+                    <input type="text" name="title" required value="{{ article.title if article else '' }}" placeholder="Заголовок новости">
+                </div>
+                <div class="form-group">
+                    <label>Краткое описание</label>
+                    <textarea name="summary" rows="3" placeholder="Краткое описание (для SEO и анонса)">{{ article.summary if article else '' }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Содержание *</label>
+                    <textarea name="content" id="contentEditor" rows="16" required placeholder="Текст новости...">{{ article.content if article else '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-col-aside">
+                <div class="form-group">
+                    <label>Категория *</label>
+                    <select name="category_id" required>
+                        <option value="">— Выберите —</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if article and article.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Изображение</label>
+                    {% if article and article.image %}
+                    <div class="current-image">
+                        <img src="{{ url_for('static', filename='img/uploads/' + article.image) }}" alt="">
+                        <span>Текущее изображение</span>
+                    </div>
+                    {% endif %}
+                    <input type="file" name="image" accept="image/*">
+                </div>
+                <div class="form-checks">
+                    <label class="toggle-label">
+                        <input type="checkbox" name="is_published" {% if not article or article.is_published %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                        Опубликовать
+                    </label>
+                    <label class="toggle-label">
+                        <input type="checkbox" name="is_featured" {% if article and article.is_featured %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                        Показывать в слайдере
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-save"></i> {% if article %}Сохранить{% else %}Создать{% endif %}
+                    </button>
+                    <a href="{{ url_for('admin_panel.news_list') }}" class="btn btn-outline btn-full">Отмена</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

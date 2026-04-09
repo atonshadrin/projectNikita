@@ -1,0 +1,44 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Пользователи — Админ{% endblock %}
+{% block page_title %}Пользователи{% endblock %}
+{% block content %}
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead><tr><th>#</th><th>Имя</th><th>Email</th><th>Роль</th><th>Статус</th><th>Дата регистрации</th><th>Действия</th></tr></thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td><i class="fas fa-user-circle"></i> {{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.is_admin %}
+                    <span class="status-badge status-featured">Администратор</span>
+                    {% else %}
+                    <span class="status-badge status-active">Пользователь</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_active %}
+                    <span class="status-badge status-active">Активен</span>
+                    {% else %}
+                    <span class="status-badge status-draft">Заблокирован</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                <td class="actions-cell">
+                    <form method="post" action="{{ url_for('admin_panel.user_toggle_role', user_id=user.id) }}" style="display:inline">
+                        <button type="submit" class="action-btn action-edit" title="Изменить роль"><i class="fas fa-user-cog"></i></button>
+                    </form>
+                    <form method="post" action="{{ url_for('admin_panel.user_toggle_active', user_id=user.id) }}" style="display:inline">
+                        <button type="submit" class="action-btn {% if user.is_active %}action-delete{% else %}action-restore{% endif %}" title="{% if user.is_active %}Заблокировать{% else %}Разблокировать{% endif %}">
+                            <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }} — NewsPortal{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-hero" style="--cat-color: {{ category.color }}">
+        <span class="cat-hero-icon"><i class="{{ category.icon }}"></i></span>
+        <h1>{{ category.name }}</h1>
+        <p>{{ news_list.total }} материалов в категории</p>
+    </div>
+
+    <div class="main-grid-wrapper">
+        <div class="main-content-area">
+            <div class="news-grid">
+                {% for article in news_list.items %}
+                <article class="news-card">
+                    <a href="{{ url_for('news.detail', slug=article.slug) }}" class="news-card-img-link">
+                        {% if article.image %}
+                        <img src="{{ url_for('static', filename='img/uploads/' + article.image) }}" alt="{{ article.title }}">
+                        {% else %}
+                        <div class="news-card-placeholder"><i class="fas fa-newspaper"></i></div>
+                        {% endif %}
+                        <span class="news-card-badge" style="background: {{ article.category.color }}">{{ article.category.name }}</span>
+                    </a>
+                    <div class="news-card-body">
+                        <h3><a href="{{ url_for('news.detail', slug=article.slug) }}">{{ article.title }}</a></h3>
+                        {% if article.summary %}<p class="news-card-summary">{{ article.summary[:120] }}{% if article.summary|length > 120 %}...{% endif %}</p>{% endif %}
+                        <div class="news-card-meta">
+                            <span><i class="far fa-clock"></i> {{ article.published_at.strftime('%d.%m.%Y') }}</span>
+                            <span><i class="fas fa-eye"></i> {{ article.views_count }}</span>
+                            <span><i class="fas fa-heart"></i> {{ article.likes_count }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% else %}
+                <div class="empty-state"><i class="fas fa-folder-open"></i> Новостей нет.</div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if news_list.pages > 1 %}
+            <div class="pagination">
+                {% if news_list.has_prev %}
+                <a href="{{ url_for('main.category', slug=category.slug, page=news_list.prev_num) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+                {% endif %}
+                {% for p in news_list.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <a href="{{ url_for('main.category', slug=category.slug, page=p) }}" class="page-btn {% if p == news_list.page %}active{% endif %}">{{ p }}</a>
+                    {% else %}
+                    <span class="page-dots">…</span>
+                    {% endif %}
+                {% endfor %}
+                {% if news_list.has_next %}
+                <a href="{{ url_for('main.category', slug=category.slug, page=news_list.next_num) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <aside class="sidebar">
+            <div class="sidebar-widget">
+                <div class="widget-header">
+                    <h3><i class="fas fa-tags"></i> Все категории</h3>
+                </div>
+                <ul class="category-list">
+                    {% for cat in categories %}
+                    <li>
+                        <a href="{{ url_for('main.category', slug=cat.slug) }}" {% if cat.id == category.id %}class="active"{% endif %}>
+                            <span class="cat-icon" style="background: {{ cat.color }}"><i class="{{ cat.icon }}"></i></span>
+                            {{ cat.name }}
+                            <span class="cat-count">{{ cat.news.filter_by(is_published=True).count() }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

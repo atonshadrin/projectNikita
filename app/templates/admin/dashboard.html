@@ -1,0 +1,85 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Дашборд — Админ{% endblock %}
+{% block page_title %}Дашборд{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon stat-blue"><i class="fas fa-newspaper"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ news_count }}</div>
+            <div class="stat-label">Новостей</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-green"><i class="fas fa-users"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ users_count }}</div>
+            <div class="stat-label">Пользователей</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-orange"><i class="fas fa-comments"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ comments_count }}</div>
+            <div class="stat-label">Комментариев</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-purple"><i class="fas fa-tags"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ categories_count }}</div>
+            <div class="stat-label">Категорий</div>
+        </div>
+    </div>
+</div>
+
+<div class="admin-section">
+    <div class="admin-section-header">
+        <h2>Последние новости</h2>
+        <a href="{{ url_for('admin_panel.news_create') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Добавить
+        </a>
+    </div>
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Заголовок</th>
+                    <th>Категория</th>
+                    <th>Автор</th>
+                    <th>Дата</th>
+                    <th>Просмотры</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in latest_news %}
+                <tr>
+                    <td>{{ article.id }}</td>
+                    <td><a href="{{ url_for('news.detail', slug=article.slug) }}" target="_blank">{{ article.title[:50] }}{% if article.title|length > 50 %}...{% endif %}</a></td>
+                    <td><span class="badge-sm" style="background: {{ article.category.color }}">{{ article.category.name }}</span></td>
+                    <td>{{ article.author.username }}</td>
+                    <td>{{ article.published_at.strftime('%d.%m.%Y') }}</td>
+                    <td>{{ article.views_count }}</td>
+                    <td>
+                        {% if article.is_published %}
+                        <span class="status-badge status-active">Опубликована</span>
+                        {% else %}
+                        <span class="status-badge status-draft">Черновик</span>
+                        {% endif %}
+                    </td>
+                    <td class="actions-cell">
+                        <a href="{{ url_for('admin_panel.news_edit', news_id=article.id) }}" class="action-btn action-edit"><i class="fas fa-edit"></i></a>
+                        <form method="post" action="{{ url_for('admin_panel.news_delete', news_id=article.id) }}" style="display:inline" onsubmit="return confirm('Удалить?')">
+                            <button type="submit" class="action-btn action-delete"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Категории — Админ{% endblock %}
+{% block page_title %}Категории{% endblock %}
+{% block content %}
+<div class="admin-section-header">
+    <h2>Категории</h2>
+    <a href="{{ url_for('admin_panel.category_create') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Добавить</a>
+</div>
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead><tr><th>#</th><th>Название</th><th>Слаг</th><th>Цвет</th><th>Иконка</th><th>Новостей</th><th>Действия</th></tr></thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td>{{ cat.id }}</td>
+                <td><span class="badge-sm" style="background: {{ cat.color }}"><i class="{{ cat.icon }}"></i> {{ cat.name }}</span></td>
+                <td><code>{{ cat.slug }}</code></td>
+                <td><span class="color-dot" style="background: {{ cat.color }}"></span> {{ cat.color }}</td>
+                <td><i class="{{ cat.icon }}"></i> <code>{{ cat.icon }}</code></td>
+                <td>{{ cat.news.count() }}</td>
+                <td class="actions-cell">
+                    <a href="{{ url_for('admin_panel.category_edit', cat_id=cat.id) }}" class="action-btn action-edit"><i class="fas fa-edit"></i></a>
+                    <form method="post" action="{{ url_for('admin_panel.category_delete', cat_id=cat.id) }}" style="display:inline" onsubmit="return confirm('Удалить категорию и все её новости?')">
+                        <button type="submit" class="action-btn action-delete"><i class="fas fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

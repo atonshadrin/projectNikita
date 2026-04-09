@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NewsPortal{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+    <div class="header-top">
+        <div class="container">
+            <div class="header-top-inner">
+                <div class="header-date">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="current-date"></span>
+                </div>
+                <div class="header-social">
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-vk"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-main">
+        <div class="container">
+            <div class="header-main-inner">
+                <a href="{{ url_for('main.index') }}" class="logo">
+                    <i class="fas fa-bolt"></i>
+                    <span>News<strong>Portal</strong></span>
+                </a>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}">Главная</a></li>
+                        {% for cat in categories %}
+                        <li>
+                            <a href="{{ url_for('main.category', slug=cat.slug) }}"
+                               class="{% if request.view_args and request.view_args.get('slug') == cat.slug %}active{% endif %}"
+                               style="--cat-color: {{ cat.color }}">
+                                <i class="{{ cat.icon }}"></i> {{ cat.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin_panel.dashboard') }}" class="btn btn-sm btn-outline">
+                            <i class="fas fa-cog"></i> Админ
+                        </a>
+                        {% endif %}
+                        <div class="user-menu">
+                            <button class="user-menu-toggle">
+                                <i class="fas fa-user-circle"></i> {{ current_user.username }}
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="user-dropdown">
+                                <a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline">Войти</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary">Регистрация</a>
+                    {% endif %}
+                    <button class="hamburger" id="hamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+        <button class="flash-close">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- MAIN CONTENT -->
+<main class="site-main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="{{ url_for('main.index') }}" class="logo">
+                    <i class="fas fa-bolt"></i>
+                    <span>News<strong>Portal</strong></span>
+                </a>
+                <p>Актуальные новости со всего мира.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Категории</h4>
+                <ul>
+                    {% for cat in categories %}
+                    <li><a href="{{ url_for('main.category', slug=cat.slug) }}">{{ cat.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Разделы</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.index') }}">Главная</a></li>
+                    <li><a href="{{ url_for('auth.login') }}">Войти</a></li>
+                    <li><a href="{{ url_for('auth.register') }}">Регистрация</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 NewsPortal. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

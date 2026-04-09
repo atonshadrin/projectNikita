@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Главная — NewsPortal{% endblock %}
+
+{% block content %}
+<!-- HERO SLIDER -->
+{% if featured_news %}
+<section class="hero-slider">
+    <div class="slider-wrapper" id="heroSlider">
+        {% for article in featured_news %}
+        <div class="slide {% if loop.first %}active{% endif %}">
+            {% if article.image %}
+            <img src="{{ url_for('static', filename='img/uploads/' + article.image) }}" alt="{{ article.title }}" class="slide-bg">
+            {% else %}
+            <div class="slide-bg slide-placeholder"></div>
+            {% endif %}
+            <div class="slide-overlay"></div>
+            <div class="slide-content container">
+                <span class="badge" style="background: {{ article.category.color }}">
+                    <i class="{{ article.category.icon }}"></i> {{ article.category.name }}
+                </span>
+                <h1><a href="{{ url_for('news.detail', slug=article.slug) }}">{{ article.title }}</a></h1>
+                {% if article.summary %}<p>{{ article.summary }}</p>{% endif %}
+                <div class="slide-meta">
+                    <span><i class="far fa-clock"></i> {{ article.published_at.strftime('%d.%m.%Y') }}</span>
+                    <span><i class="fas fa-eye"></i> {{ article.views_count }}</span>
+                    <span><i class="far fa-comment"></i> {{ article.comments_count }}</span>
+                </div>
+                <a href="{{ url_for('news.detail', slug=article.slug) }}" class="btn btn-primary">Читать далее</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <button class="slider-btn slider-prev" id="sliderPrev"><i class="fas fa-chevron-left"></i></button>
+    <button class="slider-btn slider-next" id="sliderNext"><i class="fas fa-chevron-right"></i></button>
+    <div class="slider-dots" id="sliderDots">
+        {% for article in featured_news %}
+        <button class="dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></button>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- MAIN GRID -->
+<div class="container main-grid-wrapper">
+    <div class="main-content-area">
+
+        <!-- LATEST NEWS -->
+        <section class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-fire"></i> Последние новости</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="news-grid">
+                {% for article in latest_news %}
+                <article class="news-card">
+                    <a href="{{ url_for('news.detail', slug=article.slug) }}" class="news-card-img-link">
+                        {% if article.image %}
+                        <img src="{{ url_for('static', filename='img/uploads/' + article.image) }}" alt="{{ article.title }}">
+                        {% else %}
+                        <div class="news-card-placeholder"><i class="fas fa-newspaper"></i></div>
+                        {% endif %}
+                        <span class="news-card-badge" style="background: {{ article.category.color }}">{{ article.category.name }}</span>
+                    </a>
+                    <div class="news-card-body">
+                        <h3><a href="{{ url_for('news.detail', slug=article.slug) }}">{{ article.title }}</a></h3>
+                        {% if article.summary %}<p class="news-card-summary">{{ article.summary[:120] }}{% if article.summary|length > 120 %}...{% endif %}</p>{% endif %}
+                        <div class="news-card-meta">
+                            <span><i class="far fa-clock"></i> {{ article.published_at.strftime('%d.%m.%Y') }}</span>
+                            <span><i class="fas fa-eye"></i> {{ article.views_count }}</span>
+                            <span><i class="fas fa-heart"></i> {{ article.likes_count }}</span>
+                            <span><i class="far fa-comment"></i> {{ article.comments_count }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <!-- Popular -->
+        <div class="sidebar-widget">
+            <div class="widget-header">
+                <h3><i class="fas fa-chart-line"></i> Популярное</h3>
+            </div>
+            <ol class="popular-list">
+                {% for article in popular_news %}
+                <li>
+                    <div class="popular-num">{{ loop.index }}</div>
+                    <div class="popular-info">
+                        <a href="{{ url_for('news.detail', slug=article.slug) }}">{{ article.title }}</a>
+                        <span class="popular-views"><i class="fas fa-eye"></i> {{ article.views_count }}</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+
+        <!-- Latest Comments -->
+        <div class="sidebar-widget">
+            <div class="widget-header">
+                <h3><i class="fas fa-comments"></i> Комментарии</h3>
+            </div>
+            <ul class="comment-list-sidebar">
+                {% for comment in latest_comments %}
+                <li>
+                    <div class="comment-sidebar-user">
+                        <i class="fas fa-user-circle"></i>
+                        <strong>{{ comment.author.username }}</strong>
+                        <span>{{ comment.created_at.strftime('%d.%m') }}</span>
+                    </div>
+                    <a href="{{ url_for('news.detail', slug=comment.news.slug) }}#comments" class="comment-sidebar-text">
+                        {{ comment.content[:80] }}{% if comment.content|length > 80 %}...{% endif %}
+                    </a>
+                    <div class="comment-sidebar-news">
+                        <i class="fas fa-newspaper"></i> {{ comment.news.title[:40] }}...
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Categories -->
+        <div class="sidebar-widget">
+            <div class="widget-header">
+                <h3><i class="fas fa-tags"></i> Категории</h3>
+            </div>
+            <ul class="category-list">
+                {% for cat in categories %}
+                <li>
+                    <a href="{{ url_for('main.category', slug=cat.slug) }}">
+                        <span class="cat-icon" style="background: {{ cat.color }}"><i class="{{ cat.icon }}"></i></span>
+                        {{ cat.name }}
+                        <span class="cat-count">{{ cat.news.filter_by(is_published=True).count() }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </aside>
+</div>
+{% endblock %}
